@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+	
+	<head>
+		<title>
+			Country Search
+		</title>
+		<style>
+			img.flagImg {
+				height: 32px;
+			}
+			
+			th {
+				background-color: #e4e4e4;
+			}
+			
+			td,th {
+				padding: 5px;
+			}
+			
+			tr:nth-child(odd) {
+				background-color: #f4f4f4;
+			}
+		</style>
+		
+		<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+		<script type="text/javascript">
+			$(function() {
+				$("#searchForm").submit(function( e ) {
+					
+					e.preventDefault();
+
+					// get form parameters
+					var searchForm = $(this);
+					var country_name = searchForm.find("input[name='country_name']").val();
+					var url =  searchForm.attr("action");
+
+					// get data
+					var request = $.get( url, {name: country_name} );
+					request.done(function(data) {
+						var list = $.parseJSON(data);
+						if(list.status == "Error") {
+							$("#results").empty().append(list.message).css({'color':'red'});
+						}else{
+							if(list.countries.length == 0) {
+								$("#results").empty().append("No countries found").css({'color':'black'});
+							}else{
+								var table = $('<table/>');
+								var head  = $('<tr/>');
+								head.append('<th>Name</th>');
+								head.append('<th>Alpha 2 Code</th>');
+								head.append('<th>Alpha 3 Code</th>');
+								head.append('<th>Flag</th>');
+								head.append('<th>Region</th>');
+								head.append('<th>Subregion</th>');
+								head.append('<th>Population</th>');
+								head.append('<th>Languages</th>');
+								table.append(head);
+								
+								for(i=0; i<list.countries.length; i++){
+									var country = list.countries[i];
+
+									var row = $(table[0].insertRow(-1));
+								
+									row.append($('<td/>').text(country.name));
+									row.append($('<td/>').text(country.alpha2Code));
+									row.append($('<td/>').text(country.alpha3Code));
+									row.append($('<td/>').append($('<img>',{src:country.flag}).addClass('flagImg')));
+									row.append($('<td/>').text(country.region));
+									row.append($('<td/>').text(country.subregion));
+									row.append($('<td/>').text(country.population));
+									var languages = "";
+									for(j=0; j<country.languages.length; j++) {
+										languages += country.languages[j].name + '<br/>';
+									}
+									
+									row.append($('<td/>').html(languages));
+								}
+							
+								$("#results").empty().append(table).css({'color':'black'});
+								
+								
+							}
+						}
+					});
+				});
+			});
+		</script>
+
+	</head>
+	<body>
+		<form action="/search.php" id="searchForm">
+  			<input type="text" name="country_name" placeholder="Search...">
+  			<input type="submit" value="Search">
+		</form>
+		<div id="results">
+		</div>
+	</body>
+
+	
+</html>
